@@ -1,0 +1,20 @@
+
+module rom (
+    input [2:0] pc_out,
+    output reg [15:0] instruction
+);
+   always @(*)begin
+        case(pc_out)                                            // 0x00 = RX_Done địa chỉ Uart
+            3'b000: instruction = 16'b0001_0100_0000_0000; // Read RX_DONE  vao thanh ghi 0100=R4 regiterfile
+            3'b001: instruction = 16'b0010_0000_0000_0000;  // 0010 = Jump
+            3'b010: instruction = 16'b0001_0001_0000_0100;  // Read Rx_data = 0100 ghi R1 = 0001,
+            3'b011: instruction = 16'b0001_0100_0000_0000; // Read RX_DONE  vao thanh ghi 0010=R4 regiterfile
+            3'b100: instruction = 16'b0010_0000_0000_0000; // 0010 = Jump Pc3
+            3'b101: instruction = 16'b0001_0010_0000_0100; // Read Rx_data =  0100 vào reg R2 = 0010
+            3'b110: instruction = 16'b0011_0011_0001_0010; // Ghi R3 = 0011 = 0001 + 0010
+            3'b111: instruction = 16'b0111_0011_0000_1000; // 0111 = store 
+            default: instruction = 16'h0;
+        endcase
+   end
+    
+endmodule

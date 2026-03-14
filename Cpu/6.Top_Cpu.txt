@@ -1,0 +1,85 @@
+
+module top_cpu (
+    input clk,
+    input reset_n,
+    input [7:0] data_rx,                 // du lieu tu uart_rx
+
+    //apb ra uart
+    output wire [7:0] p_addr, 
+    output wire p_write,
+    output wire p_enable,
+    output wire p_sel_uart,
+    output wire [7:0] p_data
+);
+    wire pc_enable;
+    wire [2:0] pc_next;
+    wire [2:0] pc_out;
+    wire [15:0] instruction;
+    wire read;
+    wire [3:0] addr_data_1;
+    wire [3:0] addr_data_2;
+    wire [3:0] addr_read;
+    wire [7:0] data_1;
+    wire [7:0] data_2;
+    wire [7:0] result;
+    wire [7:0] data_r4;
+    wire [7:0] data_alu;
+    wire data_source;
+    wire [7:0] data_mux;    // data ddc chon
+    assign data_mux = (data_source) ? data_rx : data_alu;
+
+
+    program_counter pc_uut(
+        .clk(clk),
+        .reset_n(reset_n),
+        .pc_enable(pc_enable),
+        .pc_next(pc_next),
+        .pc_out(pc_out)
+    );
+
+    rom rom_uut(
+        .pc_out(pc_out),
+        .instruction(instruction)
+    );
+
+    register rf_uut(
+        .clk(clk),  
+        .read(read),                
+        .addr_data_1(addr_data_1),      
+        .addr_data_2(addr_data_2),     
+        .addr_read(addr_read),      
+        .data_mux(data_mux),      
+        .data_1(data_1),          
+        .data_2(data_2),      
+        .result(result),
+        .data_r4(data_r4)
+    );
+
+    alu uut_alu(
+        .data_1(data_1),
+        .data_2(data_2),
+        .data_alu(data_alu)
+    );
+
+    cu cu_uut(
+        .clk(clk),
+        .reset_n(reset_n),
+        .instruction(instruction),
+        .pc_out(pc_out),
+        .data_r4(data_r4),
+        .result(result),
+        .read(read),
+        .addr_read(addr_read),
+        .addr_data_1(addr_data_1),           
+        .addr_data_2(addr_data_2),           
+        .data_source(data_source),
+        .pc_enable(pc_enable),
+        .p_addr(p_addr),
+        .p_write(p_write),
+        .p_enable(p_enable),
+        .p_sel_uart(p_sel_uart),
+        .p_data(p_data),
+        .pc_next(pc_next)
+    );
+
+endmodule
